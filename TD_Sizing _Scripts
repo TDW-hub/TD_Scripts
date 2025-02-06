@@ -1,0 +1,67 @@
+/* Below are 3 scripts to run as Teradata administrator that we can load into our calculator to futher refine the estimate 
+
+These each get 90 days of data (not current day) with daily information for node info and every 10 minute information for CPU Utilization. 
+
+In addition, the following script will provide the space utilization on the Teradata system:
+
+*/
+
+/* Script #1*/
+Select TheDate||'|'|| 
+TheTime||'|'||
+NodeID||'|'||
+CPUIdle||'|'||
+CPUIoWait||'|'||
+CPUUServ||'|'||
+CPUUExec
+From pdcrinfo.ResUsageSpma
+Where thedate between current_date - 91
+    and current_date;
+        
+
+Select distinct TheDate||'|'|| 
+NodeID||'|'||
+NodeType||'|'||
+PM_CPU_COD||'|'||
+WM_CPU_COD||'|'||
+PM_IO_COD||'|'||
+WM_IO_COD||'|'||
+NCPUs||'|'||
+Vproc1||'|'||
+Vproc2||'|'||
+VprocType1||'|'||
+VprocType2||'|'||
+MemSize||'|'||
+NodeNormFactor
+From pdcrinfo.ResUsageSpma
+Where thedate between current_date - 91
+    and current_date;
+
+/* Note: there are two queries below.  
+Depending on the TD Version if the above query fails with b.protectionkind column not 
+found use the following query with column name b.protectiontype */
+
+Select a.databasename,
+a.tablename,
+b.protectionkind,
+sum(a.currentperm)
+from dbc.allspace a
+,dbc.tables b
+Where  a.databasename = b.databasename
+and a.tablename = b.tablename
+and a.currentperm > 0
+Group by 1,2,3
+Order by 1,2;
+
+
+Select a.databasename,
+a.tablename,
+b.protectiontype,
+sum(a.currentperm)
+from dbc.allspace a
+,dbc.tables b
+Where  a.databasename = b.databasename
+and a.tablename = b.tablename
+and a.currentperm > 0
+Group by 1,2,3
+Order by 1,2;
